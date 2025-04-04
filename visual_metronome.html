@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Visual Metronome</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'Josefin Sans', sans-serif;
+    }
+
+    #flash {
+      width: 150px;
+      height: 150px;
+      background-color: transparent;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 192px;
+      font-weight: bold;
+      transition: transform 0.2s ease, color 0.3s ease;
+    }
+
+    .controls {
+      text-align: center;
+    }
+
+    .bpm-display {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    .beat-counter {
+      font-size: 20px;
+      margin: 10px 0;
+      color: #ccc;
+    }
+
+    input[type=range], input[type=number] {
+      width: 60px;
+      font-size: 16px;
+      text-align: center;
+      margin: 0 5px;
+    }
+
+    button {
+      padding: 10px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      margin-top: 15px;
+      border: none;
+      border-radius: 999px;
+      background-color: #1E90FF;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="flash">1</div>
+  <div class="controls">
+    <div class="bpm-display">BPM: <span id="bpmValue">120</span></div>
+    <div class="beat-counter">Beat: <span id="beatCount">0</span></div>
+    <div class="bpm-display">
+      Time Signature: 
+      <input type="number" id="beatsPerMeasure" min="1" value="4"> / 
+      <input type="number" id="noteValue" min="1" value="4">
+    </div>
+    <div class="bpm-display">
+      Special Color on Beat: <input type="number" id="specialBeat" min="1" value="3">
+    </div>
+    <input type="range" id="bpmSlider" min="40" max="300" value="120">
+    <br>
+    <button id="startStopBtn">Start</button>
+  </div>
+
+  <script>
+    const bpmSlider = document.getElementById('bpmSlider');
+    const bpmValue = document.getElementById('bpmValue');
+    const startStopBtn = document.getElementById('startStopBtn');
+    const flash = document.getElementById('flash');
+    const beatCountDisplay = document.getElementById('beatCount');
+    const specialBeatInput = document.getElementById('specialBeat');
+    const beatsPerMeasureInput = document.getElementById('beatsPerMeasure');
+
+    let bpm = parseInt(bpmSlider.value);
+    let interval = null;
+    let beatCount = 0;
+    let specialBeat = parseInt(specialBeatInput.value);
+    let beatsPerMeasure = parseInt(beatsPerMeasureInput.value);
+
+    bpmSlider.addEventListener('input', () => {
+      bpm = parseInt(bpmSlider.value);
+      bpmValue.textContent = bpm;
+      if (interval !== null) {
+        restartMetronome();
+      }
+    });
+
+    specialBeatInput.addEventListener('input', () => {
+      specialBeat = parseInt(specialBeatInput.value);
+    });
+
+    beatsPerMeasureInput.addEventListener('input', () => {
+      beatsPerMeasure = parseInt(beatsPerMeasureInput.value);
+    });
+
+    startStopBtn.addEventListener('click', () => {
+      if (interval === null) {
+        startMetronome();
+        startStopBtn.textContent = "Stop";
+      } else {
+        stopMetronome();
+        startStopBtn.textContent = "Start";
+      }
+    });
+
+    function flashScreen() {
+      const currentBeat = (beatCount % beatsPerMeasure) + 1;
+
+      let color;
+      if (currentBeat === specialBeat) {
+        color = '#FFD700'; // yellow for special beat
+      } else if (bpm < 80) {
+        color = '#87CEEB'; // light blue
+      } else if (bpm < 140) {
+        color = '#1E90FF'; // dodger blue
+      } else {
+        color = '#0000CD'; // deep blue
+      }
+
+      flash.textContent = currentBeat;
+      flash.style.color = color;
+      flash.style.transform = 'scale(1.2)';
+
+      setTimeout(() => {
+        flash.style.transform = 'scale(1)';
+      }, 200);
+
+      beatCount++;
+      beatCountDisplay.textContent = currentBeat;
+    }
+
+    function startMetronome() {
+      beatCount = 0;
+      beatCountDisplay.textContent = beatCount;
+      const delay = 60000 / bpm;
+      interval = setInterval(flashScreen, delay);
+    }
+
+    function stopMetronome() {
+      clearInterval(interval);
+      interval = null;
+    }
+
+    function restartMetronome() {
+      stopMetronome();
+      startMetronome();
+    }
+  </script>
+</body>
+</html>
